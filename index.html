@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Train Schedule</title>
+</head>
+<body>
+  <h1>Train Schedule</h1>
+  <div id="trainData"></div>
+
+  <script>
+    // Function to fetch data from your microservice
+    async function fetchTrainSchedule() {
+      try {
+        const response = await fetch('/trains');
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching data:', error.message);
+        return [];
+      }
+    }
+
+    // Function to render the train schedule on the page
+    function renderTrainSchedule(trainData) {
+      const trainDataDiv = document.getElementById('trainData');
+
+      if (trainData.length === 0) {
+        trainDataDiv.innerHTML = '<p>No trains available in the next 12 hours.</p>';
+        return;
+      }
+
+      let html = '<table><tr><th>Train Name</th><th>Train Number</th><th>Departure Time</th><th>Seats Available (Sleeper)</th><th>Seats Available (AC)</th><th>Price (Sleeper)</th><th>Price (AC)</th></tr>';
+
+      for (const train of trainData) {
+        html += `
+          <tr>
+            <td>${train.trainName}</td>
+            <td>${train.trainNumber}</td>
+            <td>${train.departureTime.Hours}:${train.departureTime.Minutes}</td>
+            <td>${train.seatsAvailable.sleeper}</td>
+            <td>${train.seatsAvailable.AC}</td>
+            <td>${train.price.sleeper}</td>
+            <td>${train.price.AC}</td>
+          </tr>
+        `;
+      }
+
+      html += '</table>';
+      trainDataDiv.innerHTML = html;
+    }
+
+    // Function to load train schedule on page load
+    async function loadTrainSchedule() {
+      const trainData = await fetchTrainSchedule();
+      renderTrainSchedule(trainData);
+    }
+
+    // Call the function to load the train schedule when the page loads
+    window.addEventListener('load', loadTrainSchedule);
+  </script>
+</body>
+</html>
